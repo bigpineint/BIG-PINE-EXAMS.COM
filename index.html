@@ -143,10 +143,30 @@
             color: #fff;
             display: block;
         }
+        
+        .exam-logo {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem;
+        }
+
+        .exam-logo svg {
+            width: 26px;
+            height: 26px;
+            fill: #fff;
+        }
 
     </style>
 
     <div class="container">
+        <div class="exam-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm-7 9.26V17l7 3.82L19 17v-4.74l-7 3.82-7-3.82z"/></svg>
+        </div>
         <h1>Exam Login</h1>
         <form id="loginForm">
             <div class="input-box">
