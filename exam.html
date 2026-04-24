@@ -94,6 +94,18 @@
             margin-bottom: 25px;
         }
 
+        .question-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .question-meta span {
+            color: #22C55E;
+            font-weight: 600;
+        }
+
         .question-number {
             color: #22C55E;
             font-weight: 600;
@@ -362,8 +374,12 @@
 
         <!-- Exam Content -->
         <div id="examContent">
-            <div class="exam-container">
+                <div class="exam-container">
                 <div class="question-header">
+                    <div class="question-meta">
+                        <span>📚 Class: <span id="headerClass">-</span></span>
+                        <span>📖 Subject: <span id="headerSubject">-</span></span>
+                    </div>
                     <div class="question-number">Question <span id="currentQuestion">1</span> of <span id="totalQuestions">3</span></div>
                     <div class="question-text" id="questionText">What is the capital of India?</div>
                 </div>
@@ -461,31 +477,40 @@
 
         let questions = [];
 
-        // Load student info
-        window.addEventListener('load', function() {
-            const studentInfo = storage.getItem('studentInfo');
-            if (studentInfo) {
-                const data = JSON.parse(studentInfo);
-                document.getElementById('studentName').textContent = data.name;
-                document.getElementById('studentClass').textContent = data.class;
-                document.getElementById('studentSubject').textContent = data.subject;
-            } else {
-                window.location.href = 'index.html';
-            }
+            // Load student info
+            window.addEventListener('load', function() {
+                const studentInfo = storage.getItem('studentInfo');
+                if (studentInfo) {
+                    const data = JSON.parse(studentInfo);
+                    document.getElementById('studentName').textContent = data.name;
+                    document.getElementById('studentClass').textContent = data.class;
+                    document.getElementById('studentSubject').textContent = data.subject;
+                } else {
+                    window.location.href = 'index.html';
+                }
 
-            // Load questions filtered by student class
+            // Load questions filtered by student class AND subject
             const studentClass = document.getElementById('studentClass').textContent;
+            const studentSubject = document.getElementById('studentSubject').textContent.trim();
             const customQuestions = JSON.parse(storage.getItem('examQuestions'));
             
             if (customQuestions && customQuestions.length > 0) {
-                // Filter: questions for student's class OR questions for "All" classes
-                questions = customQuestions.filter(q => q.class === studentClass || q.class === 'All' || !q.class);
+                const studentClassLower = studentClass.toLowerCase();
+                const studentSubjectLower = studentSubject.toLowerCase();
+                
+                questions = customQuestions.filter(q => {
+                    const qClass = q.class || '';
+                    const qSubject = q.subject || '';
+                    const classMatch = qClass.toLowerCase() === studentClassLower || qClass.toLowerCase() === 'all' || !qClass;
+                    const subjectMatch = qSubject.toLowerCase() === studentSubjectLower || !qSubject;
+                    return classMatch && subjectMatch;
+                });
             }
-            
-            // If no custom questions or no matching questions, use default questions
-            if (questions.length === 0) {
-                questions = defaultQuestions;
-            }
+                
+                // If no custom questions or no matching questions, use default questions
+                if (questions.length === 0) {
+                    questions = defaultQuestions;
+                }
 
             if (questions.length === 0) {
                 alert('No questions found for your class. Please contact your teacher.');
@@ -550,6 +575,8 @@
             const q = questions[currentQuestionIndex];
             document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
             document.getElementById('questionText').textContent = q.question || q.text;
+            document.getElementById('headerClass').textContent = q.class || 'All';
+            document.getElementById('headerSubject').textContent = q.subject || 'General';
             document.getElementById('qCounter').textContent = (currentQuestionIndex + 1) + '/' + questions.length;
 
             const optionsContainer = document.getElementById('optionsContainer');
@@ -655,10 +682,11 @@
                 reviewHTML += `
                     <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${isCorrect ? '#22C55E' : '#ef4444'};">
                         <p style="color: #fff; font-weight: 600; margin-bottom: 10px;">Q${qNum}) ${q.question || q.text}</p>
+                        ${q.subject ? `<p style="color: #22C55E; font-size: 12px; margin-bottom: 5px;">📖 Subject: ${q.subject}</p>` : ''}
                         <p style="color: ${isCorrect ? '#22C55E' : '#ef4444'}; margin: 5px 0;">${isCorrect ? '✓' : '✗'} Your Answer: <strong>${userAnswer}) ${userAnswerText}</strong></p>
                     </div>
                 `;
-});
+            });
 
             document.getElementById('answersReview').innerHTML = reviewHTML;
 
